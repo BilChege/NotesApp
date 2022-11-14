@@ -30,4 +30,13 @@ public class NoteRepository {
         });
     }
 
+    void update(Note note){
+        NoteDataBase.databaseWriteExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                noteDAO.update(note);
+            }
+        });
+    }
+
 }

@@ -41,6 +41,7 @@ public class ListNotes extends AppCompatActivity {
         noteVIewModel = new ViewModelProvider(this).get(NoteVIewModel.class);
         addNote = findViewById(R.id.btnAddNote);
         adapter = new NoteListAdapter(new NoteListAdapter.NoteDiff());
+        adapter.setContext(ListNotes.this);
         notesList.setAdapter(adapter);
         notesList.setLayoutManager(new LinearLayoutManager(this));
         addNote.setOnClickListener(new View.OnClickListener() {
@@ -55,11 +56,28 @@ public class ListNotes extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        String mode = data.getStringExtra("mode");
+        Log.e(TAG, "onActivityResult: Mode -> "+mode );
         if (requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK){
             Note note = new Note();
             note.setNoteTitle(data.getStringExtra("title"));
             note.setNoteContent(data.getStringExtra("content"));
-            noteVIewModel.insert(note);
+            if (mode.equals("save")){
+                try {
+                    noteVIewModel.insert(note);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            } else if (mode.equals("update")){
+                note.setId(data.getIntExtra("id",-1));
+                try {
+                    noteVIewModel.update(note);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            } else if (mode.equals("NAN")){
+                //Do Nothing
+            }
         } else {
             Toast.makeText(ListNotes.this,"An error occurred while saving data",Toast.LENGTH_SHORT).show();
         }
@@ -72,7 +90,7 @@ public class ListNotes extends AppCompatActivity {
             @Override
             public void onChanged(List<Note> notes) {
                 if (notes.isEmpty()){
-                    Toast.makeText(ListNotes.this,"You have not added any notes yet. Click on the add button",Toast.LENGTH_LONG).show();
+
                 } else {
                     for (Note note:notes){
                         Log.e(TAG, "onChanged: "+note.getNoteTitle());
