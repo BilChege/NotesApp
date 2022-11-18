@@ -37,12 +37,8 @@ public class ListNotes extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_notes);
         rootElement = findViewById(R.id.container);
-        notesList = findViewById(R.id.notesList);
         noteVIewModel = new ViewModelProvider(this).get(NoteVIewModel.class);
         addNote = findViewById(R.id.btnAddNote);
-        adapter = new NoteListAdapter(new NoteListAdapter.NoteDiff());
-        notesList.setAdapter(adapter);
-        notesList.setLayoutManager(new LinearLayoutManager(this));
         addNote.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -72,14 +68,46 @@ public class ListNotes extends AppCompatActivity {
             @Override
             public void onChanged(List<Note> notes) {
                 if (notes.isEmpty()){
-                    Toast.makeText(ListNotes.this,"You have not added any notes yet. Click on the add button",Toast.LENGTH_LONG).show();
-                } else {
-                    for (Note note:notes){
-                        Log.e(TAG, "onChanged: "+note.getNoteTitle());
+                    if (rootElement.getChildCount() > 1){
+                        RelativeLayout relativeLayout = (RelativeLayout) rootElement.getChildAt(1);
+                        View view = relativeLayout.getChildAt(0);
+                        if (!(view instanceof TextView)){
+                            rootElement.removeViewAt(1);
+                            initTextView();
+                        }
+                    } else {
+                        initTextView();
                     }
-                    adapter.submitList(notes);
+                } else {
+                    if (rootElement.getChildCount() > 1){
+                        RelativeLayout relativeLayout = (RelativeLayout) rootElement.getChildAt(1);
+                        View view = relativeLayout.getChildAt(0);
+                        if (!(view instanceof RecyclerView)){
+                            rootElement.removeViewAt(1);
+                            initRecyclerView(notes);
+                        } else {
+                            adapter.submitList(notes);
+                        }
+                    } else {
+                        initRecyclerView(notes);
+                    }
                 }
             }
         });
+    }
+
+    private void initTextView() {
+        View noNotes = LayoutInflater.from(ListNotes.this).inflate(R.layout.nonotes,rootElement);
+        TextView textView = noNotes.findViewById(R.id.emptyText);
+        textView.setText("You do not have any notes yet. Please click on the add button below.");
+    }
+
+    private void initRecyclerView(List<Note> notes) {
+        View notesList = LayoutInflater.from(ListNotes.this).inflate(R.layout.noteslist,rootElement);
+        RecyclerView recyclerView = notesList.findViewById(R.id.notesList);
+        adapter = new NoteListAdapter(new NoteListAdapter.NoteDiff());
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(ListNotes.this));
+        adapter.submitList(notes);
     }
 }
