@@ -51,11 +51,28 @@ public class ListNotes extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        String mode = data.getStringExtra("mode");
+        Log.e(TAG, "onActivityResult: Mode -> "+mode );
         if (requestCode == NEW_WORD_ACTIVITY_REQUEST_CODE && resultCode == RESULT_OK){
             Note note = new Note();
             note.setNoteTitle(data.getStringExtra("title"));
             note.setNoteContent(data.getStringExtra("content"));
-            noteVIewModel.insert(note);
+            if (mode.equals("save")){
+                try {
+                    noteVIewModel.insert(note);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            } else if (mode.equals("update")){
+                note.setId(data.getIntExtra("id",-1));
+                try {
+                    noteVIewModel.update(note);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            } else if (mode.equals("NAN")){
+                //Do Nothing
+            }
         } else {
             Toast.makeText(ListNotes.this,"An error occurred while saving data",Toast.LENGTH_SHORT).show();
         }
@@ -106,6 +123,7 @@ public class ListNotes extends AppCompatActivity {
         View notesList = LayoutInflater.from(ListNotes.this).inflate(R.layout.noteslist,rootElement);
         RecyclerView recyclerView = notesList.findViewById(R.id.notesList);
         adapter = new NoteListAdapter(new NoteListAdapter.NoteDiff());
+        adapter.setContext(ListNotes.this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(ListNotes.this));
         adapter.submitList(notes);

@@ -21,6 +21,7 @@
     <EditText
         android:id="@+id/noteContent"
         android:layout_width="match_parent"
+        android:paddingTop="5dp"
         android:layout_height="500dp"
         android:gravity="top"
         android:layout_below="@id/noteTitle"
